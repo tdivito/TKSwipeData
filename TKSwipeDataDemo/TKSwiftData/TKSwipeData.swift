@@ -10,7 +10,7 @@ import Foundation
 
 extension String {
     subscript (i: Int) -> Character {
-        return self[advance(self.startIndex, i)]
+        return self[self.startIndex.advancedBy(i)]
     }
     
     subscript (i: Int) -> String {
@@ -18,40 +18,50 @@ extension String {
     }
     
     subscript (r: Range<Int>) -> String {
-        return substringWithRange(Range(start: advance(self.startIndex, r.startIndex), end: advance(self.startIndex, r.endIndex)))
+        return substringWithRange(Range(start: self.startIndex.advancedBy(r.startIndex), end: self.startIndex.advancedBy(r.endIndex)))
     }
 }
 
 struct TKSwipeData {
-    let swipeData: String
+    var swipeData: String
     
     var cardHolder: String {
         get {
-            var cardHolder = swipeData.componentsSeparatedByString("^")[1]
-            var cardHolderParts = cardHolder.componentsSeparatedByString("/")
-            return "\(cardHolderParts[1]) \(cardHolderParts[0])"
+            let cardHolder = swipeData.componentsSeparatedByString("^")[1]
+            if cardHolder.containsString("/") {
+                let cardHolderParts = cardHolder.componentsSeparatedByString("/")
+                if cardHolderParts.count > 1 {
+                    return "\(cardHolderParts[1]) \(cardHolderParts[0])"
+                }
+                else {
+                    return cardHolderParts[1]
+                }
+            }
+            else {
+                return cardHolder
+            }
         }
     }
     
     var cardNumber: String {
         get {
-            var charIndex = swipeData.rangeOfString("^")!
-            var sIndex = advance(swipeData.startIndex, 2)
-            var eIndex = advance(charIndex.endIndex, -1)
+            let charIndex = swipeData.rangeOfString("^")!
+            let sIndex = swipeData.startIndex.advancedBy(2)
+            let eIndex = charIndex.endIndex.advancedBy(-1)
             return swipeData.substringWithRange(sIndex..<eIndex)
         }
     }
     
     var cardLastFour: String {
         get {
-            var eIndex = advance(cardNumber.endIndex, -4)
+            let eIndex = cardNumber.endIndex.advancedBy(-4)
             return cardNumber.substringFromIndex(eIndex)
         }
     }
     
     var cardExpiration: String {
         get {
-            var expParts = swipeData.componentsSeparatedByString("^")[2]
+            let expParts = swipeData.componentsSeparatedByString("^")[2]
             return "\(expParts[2..<4])\(expParts[0..<2])"
         }
     }
@@ -61,10 +71,10 @@ struct TKSwipeData {
     }
     
     func maskedCardNumber(mask: String = "X") -> String {
-        var eIndex = advance(cardNumber.endIndex, -4)
+        let eIndex = cardNumber.endIndex.advancedBy(-4)
         var maskCharacters = ""
         
-        for i in 0..<count(cardNumber.substringToIndex(eIndex)) {
+        for _ in 0..<cardNumber.substringToIndex(eIndex).characters.count {
             maskCharacters = maskCharacters + mask
         }
         
@@ -72,9 +82,9 @@ struct TKSwipeData {
     }
     
     func formattedExpiration(divider: String) -> String {
-        var idx = advance(cardExpiration.startIndex, 2)
-        var month = cardExpiration.substringToIndex(idx)
-        var year  = cardExpiration.substringFromIndex(idx)
+        let idx = cardExpiration.startIndex.advancedBy(2)
+        let month = cardExpiration.substringToIndex(idx)
+        let year  = cardExpiration.substringFromIndex(idx)
         return "\(month)\(divider)\(year)"
     }
 }
