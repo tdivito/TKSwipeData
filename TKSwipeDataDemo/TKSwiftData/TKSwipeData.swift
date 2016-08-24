@@ -34,7 +34,7 @@ struct TKSwipeData {
                     return "\(cardHolderParts[1]) \(cardHolderParts[0])"
                 }
                 else {
-                    return cardHolderParts[1]
+                    return cardHolderParts[0]
                 }
             }
             else {
